@@ -1,0 +1,9 @@
+[package]
+name = "notification-service"
+version = "0.1.0"
+authors = ["Elliott Clarke <elliott.clarke.ext@siemens-energy.com>"]
+edition = "2018"
+
+[dependencies]
+yew = { git = "https://github.com/yewstack/yew/" }
+yew-bulma-notification = { path = "../.." }

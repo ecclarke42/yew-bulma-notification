@@ -1,0 +1,104 @@
+// TODO: enable middle?
+@use "sass:meta";
+$ybn-spacing: 1.5em;
+@if variable-exists("block-spacing") {
+  $ybn-spacing: $block-spacing;
+}
+
+.ybn-top-left {
+  overflow: hidden;
+  position: absolute;
+  top: $ybn-spacing;
+  left: $ybn-spacing;
+}
+
+.ybn-top-right {
+  overflow: hidden;
+  position: absolute;
+  top: $ybn-spacing;
+  right: $ybn-spacing;
+}
+
+.ybn-bottom-left {
+  overflow: hidden;
+  position: absolute;
+  bottom: $ybn-spacing;
+  left: $ybn-spacing;
+}
+
+.ybn-bottom-right {
+  overflow: hidden;
+  position: absolute;
+  bottom: $ybn-spacing;
+  right: $ybn-spacing;
+}
+
+// Animate messages in and out
+
+// Hide overflow for body and notification's container to avoid scrollbar flicker
+// html body main {
+//   overflow: hidden;
+// }
+
+// .ybn-parent {
+//   overflow: hidden;
+// }
+
+.ybn-animate-in-from-left {
+  margin-bottom: 0;
+  max-height: 0;
+  opacity: 0;
+  transform: translateX(-300px);
+  animation: openSpace 0.5s ease forwards, moveIn 0.75s 0.2s ease forwards;
+}
+
+.ybn-animate-in-from-right {
+  margin-bottom: 0;
+  max-height: 0;
+  opacity: 0;
+  transform: translateX(300px);
+  animation: openSpace 0.5s ease forwards, moveIn 0.75s 0.2s ease forwards;
+}
+
+.ybn-animate-out-to-left {
+  animation: moveOutLeft 0.2s ease forwards, closeSpace 0.25s 0.5s ease forwards;
+}
+.ybn-animate-out-to-right {
+  animation: moveOutRight 0.2s ease forwards,
+    closeSpace 0.25s 0.5s ease forwards;
+}
+// This animation doesn't look as nice... Stick with the move-out
+// .ybn-animate-closed {
+//   animation: closeSpace 1s ease forwards;
+// }
+
+// inspiredby https://css-tricks.com/transitional-interfaces-coded/
+@keyframes openSpace {
+  to {
+    margin-bottom: $ybn-spacing;
+    max-height: unset;
+  }
+}
+@keyframes closeSpace {
+  to {
+    max-height: 0;
+  }
+}
+@keyframes moveIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes moveOutLeft {
+  to {
+    opacity: 0;
+    transform: translateX(-300px);
+  }
+}
+@keyframes moveOutRight {
+  to {
+    opacity: 0;
+    transform: translateX(300px);
+  }
+}

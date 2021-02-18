@@ -1,0 +1,8 @@
+// Customize Bulma
+// $primary: #641e8c;
+// $link: #009999;
+
+@import "./node_modules/bulma/bulma.sass";
+
+// Import stylesheet from this crate or the published npm package
+@import "../../src/";
