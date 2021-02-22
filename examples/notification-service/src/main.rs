@@ -97,12 +97,7 @@ impl Component for App {
                         .position(Position::BottomRight)
                         .header(Some(String::from("Notification Bottom Right")))
                         .children(yew::html::ChildrenRenderer::new(vec![html! {
-                            <>
-                                <p>{"This is the body of the notification"}</p>
-                                <p>{"Any `html!` output can be placed here"}</p>
-                                <p></p>
-                                <p>{"Hello from the bottom right of the page!"}</p>
-                            </>
+                            <p>{"This is the body of the notification. Any `html!` output can be placed here. This notificaiton has really long content to show the maximum with of"}<code>{"30vh"}</code>{". You can customize the max width with"}<code>{"$ybn-max-width"}</code></p>
                         }]))
                         .build(),
                 );

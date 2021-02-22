@@ -112,7 +112,7 @@ impl Component for Notification {
         // };
 
         // Figure out which classes to render
-        let mut msg_cls = Classes::from("message");
+        let mut msg_cls = Classes::from("message ybn-body");
         let mut del_cls = Classes::from("delete");
         if let Some(cls) = self.props.color.class() {
             msg_cls.push(cls);

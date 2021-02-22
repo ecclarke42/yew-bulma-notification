@@ -5,6 +5,11 @@ $ybn-spacing: 1.5em;
   $ybn-spacing: $block-spacing;
 }
 
+$ybn-max-width: 30vw !default;
+.ybn-body {
+  max-width: $ybn-max-width;
+}
+
 .ybn-top-left {
   overflow: hidden;
   position: absolute;
