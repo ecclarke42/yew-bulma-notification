@@ -1,18 +1,18 @@
 use yew::prelude::*;
 
 use crate::{
-    Notification, NotificationProps, NotificationService, NotificationServiceInput,
-    NotificationServiceOutput, Position,
+    Notification, NotificationAgent, NotificationAgentInput, NotificationAgentOutput,
+    NotificationProps, Position,
 };
 
 pub struct NotificationConsumer {
     link: ComponentLink<Self>,
-    _bridge: Box<dyn Bridge<NotificationService>>,
+    _bridge: Box<dyn Bridge<NotificationAgent>>,
     notifications: NotificationCollection,
 }
 
 pub enum Msg {
-    ServiceMsg(NotificationServiceOutput),
+    ServiceMsg(NotificationAgentOutput),
 
     Closed(Position, usize, Option<Callback<()>>),
     TimedOut(Position, usize, Option<Callback<()>>),
@@ -23,8 +23,8 @@ impl Component for NotificationConsumer {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut bridge = NotificationService::bridge(link.callback(Msg::ServiceMsg));
-        bridge.send(NotificationServiceInput::RegisterConsumer);
+        let mut bridge = NotificationAgent::bridge(link.callback(Msg::ServiceMsg));
+        bridge.send(NotificationAgentInput::RegisterConsumer);
         Self {
             link,
             _bridge: bridge,
@@ -39,7 +39,7 @@ impl Component for NotificationConsumer {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::ServiceMsg(msg) => match msg {
-                NotificationServiceOutput::New(mut props) => {
+                NotificationAgentOutput::New(mut props) => {
                     let position = props.position;
                     let id = self.notifications.next_id(position);
 

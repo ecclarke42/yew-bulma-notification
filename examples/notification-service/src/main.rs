@@ -1,8 +1,7 @@
 use yew::prelude::*;
 
 use yew_bulma_notification::{
-    Color, NotificationConsumer, NotificationProps, NotificationService, NotificationServiceInput,
-    Position,
+    Color, NotificationConsumer, NotificationProps, NotificationService, Position,
 };
 
 fn main() {
@@ -11,7 +10,7 @@ fn main() {
 
 /// Simple yew application that spawns a notification
 pub struct App {
-    notification_bridge: Box<dyn Bridge<NotificationService>>,
+    notification_service: NotificationService,
     link: ComponentLink<Self>,
 }
 
@@ -30,7 +29,7 @@ impl Component for App {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            notification_bridge: NotificationService::bridge(link.callback(|_| Msg::BridgeMsg)),
+            notification_service: NotificationService::new(),
             link,
         }
     }
@@ -42,7 +41,7 @@ impl Component for App {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::NotifyTL => {
-                self.notification_bridge.send(NotificationServiceInput::New(
+                self.notification_service.spawn(
                     NotificationProps::builder()
                         .position(Position::TopLeft)
                         .header(Some(String::from("Notification Top Left")))
@@ -55,11 +54,11 @@ impl Component for App {
                             </>
                         }]))
                         .build(),
-                ));
+                );
                 false
             }
             Msg::NotifyTR => {
-                self.notification_bridge.send(NotificationServiceInput::New(
+                self.notification_service.spawn(
                     NotificationProps::builder()
                         .position(Position::TopRight)
                         .header(Some(String::from("Notification Top Right")))
@@ -72,11 +71,11 @@ impl Component for App {
                             </>
                         }]))
                         .build(),
-                ));
+                );
                 false
             }
             Msg::NotifyBL => {
-                self.notification_bridge.send(NotificationServiceInput::New(
+                self.notification_service.spawn(
                     NotificationProps::builder()
                         .position(Position::BottomLeft)
                         .header(Some(String::from("Notification Bottom Left")))
@@ -89,11 +88,11 @@ impl Component for App {
                             </>
                         }]))
                         .build(),
-                ));
+                );
                 false
             }
             Msg::NotifyBR => {
-                self.notification_bridge.send(NotificationServiceInput::New(
+                self.notification_service.spawn(
                     NotificationProps::builder()
                         .position(Position::BottomRight)
                         .header(Some(String::from("Notification Bottom Right")))
@@ -106,7 +105,7 @@ impl Component for App {
                             </>
                         }]))
                         .build(),
-                ));
+                );
                 false
             }
 

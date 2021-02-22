@@ -1,62 +1,28 @@
-use std::collections::HashSet;
+use yew::prelude::*;
 
-use yew::worker::*;
-
-use crate::NotificationProps;
-
-// TODO: rename to agent, create a service wrapper type for easy interaction
+use crate::agent::{NotificationAgent, NotificationAgentInput};
+use crate::notification::NotificationProps;
 
 pub struct NotificationService {
-    link: AgentLink<NotificationService>,
-    consumers: HashSet<HandlerId>,
+    dispatcher: yew::agent::Dispatcher<NotificationAgent>,
 }
 
-pub enum NotificationServiceInput {
-    RegisterConsumer,
-    New(NotificationProps),
-}
-
-pub enum NotificationServiceOutput {
-    New(NotificationProps),
-}
-
-impl Agent for NotificationService {
-    type Reach = Context<Self>;
-    type Message = ();
-    type Input = NotificationServiceInput;
-    type Output = NotificationServiceOutput;
-
-    fn create(link: AgentLink<Self>) -> Self {
+impl Default for NotificationService {
+    fn default() -> Self {
         Self {
-            link,
-            consumers: HashSet::new(),
+            dispatcher: NotificationAgent::dispatcher(),
         }
     }
+}
 
-    fn update(&mut self, _msg: Self::Message) {}
-
-    fn handle_input(&mut self, msg: Self::Input, id: HandlerId) {
-        match msg {
-            NotificationServiceInput::RegisterConsumer => {
-                self.consumers.insert(id);
-            }
-            NotificationServiceInput::New(props) => {
-                let mut props: NotificationProps = props; // TODO: type?
-                props.standalone = false;
-                self.consumers.iter().for_each(|&id| {
-                    self.link
-                        .respond(id, NotificationServiceOutput::New(props.clone()))
-                })
-            }
-        };
+impl NotificationService {
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    // TODO: register here instead?
-    // fn connected(&mut self, _id: HandlerId) {
-
-    // }
-
-    fn disconnected(&mut self, id: HandlerId) {
-        self.consumers.remove(&id);
+    pub fn spawn(&mut self, props: NotificationProps) {
+        self.dispatcher.send(NotificationAgentInput::New(props))
     }
+
+    // Helper methods
 }
