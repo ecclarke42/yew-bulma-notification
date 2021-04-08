@@ -12,10 +12,14 @@ pub struct NotificationAgent {
 pub enum NotificationAgentInput {
     RegisterConsumer,
     New(NotificationProps),
+    NewTagged(NotificationProps, String),
+    CloseTagged(String),
 }
 
 pub enum NotificationAgentOutput {
     New(NotificationProps),
+    NewTagged(NotificationProps, String),
+    CloseTagged(String),
 }
 
 impl Agent for NotificationAgent {
@@ -34,11 +38,12 @@ impl Agent for NotificationAgent {
     fn update(&mut self, _msg: Self::Message) {}
 
     fn handle_input(&mut self, msg: Self::Input, id: HandlerId) {
+        use NotificationAgentInput::*;
         match msg {
-            NotificationAgentInput::RegisterConsumer => {
+            RegisterConsumer => {
                 self.consumers.insert(id);
             }
-            NotificationAgentInput::New(props) => {
+            New(props) => {
                 let mut props: NotificationProps = props; // TODO: type?
                 props.standalone = false;
                 self.consumers.iter().for_each(|&id| {
@@ -46,6 +51,20 @@ impl Agent for NotificationAgent {
                         .respond(id, NotificationAgentOutput::New(props.clone()))
                 })
             }
+            NewTagged(props, tag) => {
+                let mut props: NotificationProps = props;
+                props.standalone = false;
+                self.consumers.iter().for_each(|&id| {
+                    self.link.respond(
+                        id,
+                        NotificationAgentOutput::NewTagged(props.clone(), tag.clone()),
+                    )
+                })
+            }
+            CloseTagged(tag) => self.consumers.iter().for_each(|&id| {
+                self.link
+                    .respond(id, NotificationAgentOutput::CloseTagged(tag.clone()))
+            }),
         };
     }
 

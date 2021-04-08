@@ -57,14 +57,35 @@ impl Component for NotificationConsumer {
                             .callback_once(move |_| Msg::TimedOut(position, id, callback)),
                     );
 
-                    // Add to collection and re-render
-                    self.notifications.insert(position, id, props);
+                    self.notifications.insert(id, None, position, props);
+                    true
+                }
+
+                NotificationAgentOutput::NewTagged(mut props, tag) => {
+                    let position = props.position;
+                    let id = self.notifications.next_id(position);
+                    let callback = props.on_closed.take();
+                    props.on_closed = Some(
+                        self.link
+                            .callback_once(move |_| Msg::Closed(position, id, callback)),
+                    );
+                    let callback = props.on_timeout.take();
+                    props.on_timeout = Some(
+                        self.link
+                            .callback_once(move |_| Msg::TimedOut(position, id, callback)),
+                    );
+                    self.notifications.insert(id, Some(tag), position, props);
+                    true
+                }
+
+                NotificationAgentOutput::CloseTagged(tag) => {
+                    self.notifications.remove_tag(&tag);
                     true
                 }
             },
             Msg::Closed(position, id, callback) => {
                 yew_services::ConsoleService::log("closed");
-                self.notifications.remove(position, id);
+                self.notifications.remove_id(position, id);
                 if let Some(callback) = callback {
                     callback.emit(());
                 }
@@ -72,7 +93,7 @@ impl Component for NotificationConsumer {
             }
             Msg::TimedOut(position, id, callback) => {
                 yew_services::ConsoleService::log("timed out");
-                self.notifications.remove(position, id);
+                self.notifications.remove_id(position, id);
                 if let Some(callback) = callback {
                     callback.emit(());
                 }
@@ -124,22 +145,35 @@ impl NotificationCollection {
         }
     }
 
-    fn insert(&mut self, position: Position, id: usize, props: NotificationProps) {
+    fn insert(
+        &mut self,
+        id: usize,
+        tag: Option<String>,
+        position: Position,
+        props: NotificationProps,
+    ) {
         match position {
-            Position::TopLeft => self.tl.insert(id, props),
-            Position::TopRight => self.tr.insert(id, props),
-            Position::BottomLeft => self.bl.insert(id, props),
-            Position::BottomRight => self.br.insert(id, props),
+            Position::TopLeft => self.tl.insert(id, tag, props),
+            Position::TopRight => self.tr.insert(id, tag, props),
+            Position::BottomLeft => self.bl.insert(id, tag, props),
+            Position::BottomRight => self.br.insert(id, tag, props),
         }
     }
 
-    fn remove(&mut self, position: Position, id: usize) {
+    fn remove_id(&mut self, position: Position, id: usize) {
         match position {
-            Position::TopLeft => self.tl.remove(id),
-            Position::TopRight => self.tr.remove(id),
-            Position::BottomLeft => self.bl.remove(id),
-            Position::BottomRight => self.br.remove(id),
+            Position::TopLeft => self.tl.remove_id(id),
+            Position::TopRight => self.tr.remove_id(id),
+            Position::BottomLeft => self.bl.remove_id(id),
+            Position::BottomRight => self.br.remove_id(id),
         }
+    }
+
+    fn remove_tag(&mut self, tag: &str) {
+        self.tl.remove_tag(tag);
+        self.tr.remove_tag(tag);
+        self.bl.remove_tag(tag);
+        self.br.remove_tag(tag);
     }
 
     /// Vectors of NotificationProps ordered by position
@@ -158,7 +192,7 @@ impl NotificationCollection {
 
 struct NotificaitonList {
     next_id: usize,
-    items: Vec<(usize, NotificationProps)>,
+    items: Vec<(usize, Option<String>, NotificationProps)>,
 }
 
 impl NotificaitonList {
@@ -175,16 +209,28 @@ impl NotificaitonList {
         id
     }
 
-    fn insert(&mut self, id: usize, props: NotificationProps) {
-        self.items.push((id, props))
+    fn insert(&mut self, id: usize, tag: Option<String>, props: NotificationProps) {
+        // TODO: ensure tag uniqueness?
+        self.items.push((id, tag, props));
     }
 
-    fn remove(&mut self, id: usize) {
+    fn remove_id(&mut self, id: usize) {
         for i in 0..self.items.len() {
             if self.items[i].0 == id {
                 // self.items.swap_remove(i); // do we need to preserve order?
                 self.items.remove(i);
                 return;
+            }
+        }
+    }
+
+    /// Exhaustive (unlike remove_id, which removes the first match)
+    fn remove_tag(&mut self, tag: &str) {
+        for i in 0..self.items.len() {
+            if let Some(ref t) = self.items[i].1 {
+                if t == tag {
+                    self.items.remove(i);
+                }
             }
         }
     }
@@ -195,7 +241,7 @@ impl NotificaitonList {
         } else {
             html! {
                 <div class={position.style()}>
-                    { self.items.iter().map(|(id, props)| {
+                    { self.items.iter().map(|(id, _tag, props)| {
                         let props = props.clone();
                         html! { <Notification key={*id} with props /> }
                     } ).collect::<Html>() }

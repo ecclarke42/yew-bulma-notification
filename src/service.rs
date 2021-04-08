@@ -24,5 +24,18 @@ impl NotificationService {
         self.dispatcher.send(NotificationAgentInput::New(props))
     }
 
+    /// Spawn a notification with a specific id, so that it can be manually closed.
+    /// It is the user's responsibility to use unique id's.
+    /// TODO: don't force responsibility onto the user?
+    pub fn spawn_with_id(&mut self, props: NotificationProps, id: String) {
+        self.dispatcher
+            .send(NotificationAgentInput::NewTagged(props, id))
+    }
+
+    pub fn close_id(&mut self, id: String) {
+        self.dispatcher
+            .send(NotificationAgentInput::CloseTagged(id))
+    }
+
     // Helper methods
 }
